@@ -14,7 +14,6 @@ class APIService {
         guard let key = Bundle.main.object(forInfoDictionaryKey: "HOTPEPPER_API_KEY") as? String, !key.isEmpty else {
             // fatalError の代わりに preconditionFailure を使用
             preconditionFailure("APIキーが見つからないか空です。Info.plistに 'HOTPEPPER_API_KEY' キーが設定され、xcconfig経由で値が正しく渡されているか確認してください。")
-            // ★★★ この行が19行目あたりのはず ★★★
         }
 #if DEBUG
         print("🔑 APIキーを Info.plist から読み込みました。 Key: HOTPEPPER_API_KEY")
@@ -53,9 +52,9 @@ class APIService {
         }
 
         // レスポンスデータをJSONとして出力
-        if let jsonString = String(data: data, encoding: .utf8) {
-            print("📥 レスポンスデータ: \(jsonString)")
-        }
+//        if let jsonString = String(data: data, encoding: .utf8) {
+//            print("📥 レスポンスデータ: \(jsonString)")
+//        }
 
         // デコード
         let decoded = try JSONDecoder().decode(RestaurantResponse.self, from: data)
@@ -89,9 +88,9 @@ class APIService {
         }
 
         // レスポンスデータをJSONとして出力
-        if let jsonString = String(data: data, encoding: .utf8) {
-            print("📥 店舗詳細レスポンスデータ: \(jsonString)")
-        }
+//        if let jsonString = String(data: data, encoding: .utf8) {
+//            print("📥 店舗詳細レスポンスデータ: \(jsonString)")
+//        }
 
         // デコード
         let decoded = try JSONDecoder().decode(RestaurantResponse.self, from: data)

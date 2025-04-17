@@ -89,7 +89,7 @@ struct RestaurantRowView: View {
     var body: some View {
         HStack {
             // サムネイル画像
-            if let imageUrl = restaurant.photo.mobile.s, let url = URL(string: imageUrl) {
+            if let imageUrl = restaurant.photo.mobile.s, let _ = URL(string: imageUrl) {
                 AsyncImage(url: URL(string: imageUrl)) { image in
                     image
                         .resizable()

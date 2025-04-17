@@ -10,7 +10,7 @@ import SwiftUI
 @Observable class ContentViewModel {
     let locationManager = LocationManager()
     private let apiService = APIService()
-
+    var didPerformInitialSearch = false // 初回検索が実行されたかを追跡するフラグ (ContentViewからアクセス可能にするためprivateを削除)
     var searchResults: [Restaurant] = []
     var isLoading = false
     var error: Error?
@@ -32,18 +32,35 @@ import SwiftUI
 
     let budgetOptions = ["指定なし", "〜500円", "501〜1000円", "1001〜1500円", "1501〜2000円", "2001〜3000円", "3001〜4000円", "4001〜5000円", "5001〜7000円", "7001〜10000円", "10001〜15000円", "15001〜20000円", "20001〜30000円", "30001円〜"]
 
+    
+    // MARK: - Search Logic
+    /// レストランを検索する非同期関数
+    @MainActor
     func searchRestaurants() async {
-//         guard let location = locationManager.location else { return }
+//        guard let location = locationManager.location else {
+//            print("⚠️ Search attempted but location is still nil.")
+//            self.error = LocationError.notAvailable
+//            self.errorMessage = "位置情報が取得できませんでした。設定を確認してください。"
+//            self.isLoading = false
+//            return
+//        }
 
-        isLoading = true
+        self.isLoading = true
+        self.error = nil
+        self.errorMessage = ""
 
         // ダミーデータを使用
         let lat = 35.6608183454
         let lng = 139.7754267645
 
+//        let lat = 43.1031493
+//        let lng = 141.5327420
+
         // 実際の位置情報を使用する場合
 //         let lat = location.coordinate.latitude
 //         let lng = location.coordinate.longitude
+
+//        print("lat: \(lat), lng: \(lng)")
 
         var additionalParams: [String: String] = [:]
 
@@ -63,16 +80,13 @@ import SwiftUI
                 additionalParams: additionalParams
             )
 
-            await MainActor.run {
-                self.searchResults = results
-                self.isLoading = false
-            }
+            self.searchResults = results
+            self.isLoading = false
         } catch {
-            await MainActor.run {
-                self.error = error
-                self.errorMessage = error.localizedDescription
-                self.isLoading = false
-            }
+            self.error = error
+            self.errorMessage = error.localizedDescription
+            self.isLoading = false
+            self.searchResults = []
         }
     }
 
