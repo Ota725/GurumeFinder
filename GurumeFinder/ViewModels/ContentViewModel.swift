@@ -7,17 +7,24 @@
 
 import SwiftUI
 
-@Observable class ContentViewModel {
+@Observable
+class ContentViewModel {
     let locationManager = LocationManager()
     private let apiService = APIService()
     var didPerformInitialSearch = false // 初回検索が実行されたかを追跡するフラグ (ContentViewからアクセス可能にするためprivateを削除)
+    var nearbyRestaurants: [Restaurant] = [] 
     var searchResults: [Restaurant] = []
     var isLoading = false
+    var isLoadingNearby = false
     var error: Error?
+    var nearbyError: Error?
     var radius: Int = 3
     var selectedGenre: String = "すべて"
     var selectedBudget: String = "指定なし"
     var errorMessage: String = ""
+
+    // 最後に検索したキーワードを保持 (任意)
+    var lastSearchedKeyword: String? = nil
 
     // オプション定義
     let radiusOptions: [Int: String] = [
@@ -36,7 +43,7 @@ import SwiftUI
     // MARK: - Search Logic
     /// レストランを検索する非同期関数
     @MainActor
-    func searchRestaurants() async {
+    func searchRestaurants(keyword: String? = nil) async {
 //        guard let location = locationManager.location else {
 //            print("⚠️ Search attempted but location is still nil.")
 //            self.error = LocationError.notAvailable
@@ -73,6 +80,11 @@ import SwiftUI
         }
 
         do {
+            // キーワードがある場合、検索パラメータに追加
+            if let keyword = keyword, !keyword.isEmpty {
+                additionalParams["keyword"] = keyword
+            }
+
             let results = try await apiService.searchRestaurants(
                 lat: lat,
                 lng: lng,
@@ -87,6 +99,34 @@ import SwiftUI
             self.errorMessage = error.localizedDescription
             self.isLoading = false
             self.searchResults = []
+        }
+    }
+
+    @MainActor
+    func fetchNearbyRestaurants() async {
+        self.isLoadingNearby = true
+        self.nearbyError = nil
+
+        // ダミーデータを使用
+        let lat = 35.6608183454
+        let lng = 139.7754267645
+
+        // 近くのお店はジャンルと予算の条件なしで検索
+        do {
+            let results = try await apiService.searchRestaurants(
+                lat: lat,
+                lng: lng,
+                radius: radius,
+                additionalParams: [:] // 条件なしで検索
+            )
+
+            self.nearbyRestaurants = results
+            self.isLoadingNearby = false
+            self.didPerformInitialSearch = true
+        } catch {
+            self.nearbyError = error
+            self.isLoadingNearby = false
+            self.nearbyRestaurants = []
         }
     }
 
@@ -140,4 +180,7 @@ import SwiftUI
         locationManager.requestPermission()
     }
 
+    deinit {
+        print("✅ ContentViewModel が破棄されました")
+    }
 }
