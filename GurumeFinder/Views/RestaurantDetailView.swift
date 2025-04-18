@@ -52,7 +52,8 @@ struct RestaurantDetailView: View {
                     .overlay(Text("画像なし"))
             }
         }
-        .frame(maxWidth: .infinity) // 横幅いっぱいに表示
+        .frame(maxWidth: UIScreen.main.bounds.width)
+        .clipped()
     }
 
     // ジャンルと予算セクション (Labelで見やすく表示)
