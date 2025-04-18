@@ -9,26 +9,19 @@ import SwiftUI
 
 // 検索結果ヘッダーコンポーネント（件数と検索範囲を横並びで表示）
 struct SearchResultsHeaderView: View {
-    @Bindable var viewModel: ContentViewModel
-    @State private var isPickerShown = false
-    @Environment(\.dismiss) var dismiss
-
-    // 表示するカウントとローディング状態を引数で受け取れるようにする
+    // 値渡しのプロパティ
     var count: Int
     var isLoading: Bool
+    var currentRadius: Int
+    var radiusOptions: [Int: String]
+    var onRadiusChange: (Int) -> Void
 
-    // 初期化時にデフォルト値を使用できるイニシャライザを追加
-    init(viewModel: ContentViewModel, count: Int? = nil, isLoading: Bool? = nil) {
-        self.viewModel = viewModel
-        // countとisLoadingが明示的に指定されていない場合はデフォルト値（searchResults）を使用
-        self.count = count ?? viewModel.searchResults.count
-        self.isLoading = isLoading ?? viewModel.isLoading
-    }
-    
+    @State private var isPickerShown = false
+
     var body: some View {
         HStack(alignment: .center) {
             // 検索結果件数
-            if viewModel.isLoading {
+            if isLoading {
                 Text("検索中...")
                     .font(.headline)
             } else {
@@ -47,7 +40,7 @@ struct SearchResultsHeaderView: View {
                         .font(.subheadline)
                         .foregroundColor(.primary)
 
-                    Text(viewModel.radiusOptions[viewModel.radius] ?? "1km")
+                    Text(radiusOptions[currentRadius] ?? "1km")
                         .font(.headline)
                         .foregroundColor(.primary)
 
@@ -62,9 +55,9 @@ struct SearchResultsHeaderView: View {
         .sheet(isPresented: $isPickerShown) {
             NavigationStack {
                 List {
-                    ForEach(viewModel.radiusOptions.sorted(by: { $0.key < $1.key }), id: \.key) { key, value in
+                    ForEach(radiusOptions.sorted(by: { $0.key < $1.key }), id: \.key) { key, value in
                         Button {
-                            viewModel.radius = key
+                            onRadiusChange(key)
                             isPickerShown = false
                         } label: {
                             HStack {
@@ -73,7 +66,7 @@ struct SearchResultsHeaderView: View {
 
                                 Spacer()
 
-                                if viewModel.radius == key {
+                                if currentRadius == key {
                                     Image(systemName: "checkmark")
                                         .foregroundColor(.blue)
                                 }

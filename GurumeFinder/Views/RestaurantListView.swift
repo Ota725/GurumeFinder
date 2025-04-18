@@ -1,5 +1,5 @@
 //
-//  NearbyRestaurantsView.swift
+//  RestaurantListView.swift
 //  GurumeFinder
 //
 //  Created by 太田陽菜 on 2025/04/18.
@@ -7,42 +7,38 @@
 
 import SwiftUI
 
-struct NearbyRestaurantsView: View {
-    @Bindable var viewModel: ContentViewModel
+struct RestaurantListView<T: RestaurantSearchViewModel>: View {
+    @Bindable var viewModel: T
     @Binding var selectedRestaurant: Restaurant?
+    var loadingMessage: String
+    var emptyMessage: String
+//    var refreshAction: () async -> Void
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                if viewModel.isLoadingNearby {
-                    ProgressView("近くのお店を検索中...")
+                if viewModel.isLoading {
+                    ProgressView(loadingMessage)
                         .frame(maxWidth: .infinity, alignment: .center)
-                } else if let error = viewModel.nearbyError {
+                } else if let error = viewModel.error {
                     ErrorView(errorMessage: error.localizedDescription)
-                } else if !viewModel.nearbyRestaurants.isEmpty {
+                } else if !viewModel.restaurants.isEmpty {
                     RestaurantGridView(
-                        restaurants: viewModel.nearbyRestaurants,
+                        restaurants: viewModel.restaurants,
                         selectedRestaurant: $selectedRestaurant
                     )
                 } else {
-                    if viewModel.didPerformInitialSearch {
+                    if viewModel.didPerformSearch {
                         EmptyResultView() // 検索したが結果0件
                     } else {
-                        // 初回検索前 (位置情報待ちなど)
-                        Text("位置情報を取得して検索を開始します...")
+                        // 初回検索前
+                        Text(emptyMessage)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                             .frame(maxWidth: .infinity, alignment: .center)
                             .padding(.top, 40)
                     }
                 }
-            }
-        }
-        .refreshable {
-            print("近くのお店をリフレッシュします")
-            // データの再読み込み処理を実行
-            Task {
-                await viewModel.fetchNearbyRestaurants()
             }
         }
     }
