@@ -115,4 +115,7 @@ class APIService {
             print("❌ JSONの整形に失敗しました")
         }
     }
+    deinit {
+        print("✅ APIService が破棄されました")
+    }
 }
