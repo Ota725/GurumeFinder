@@ -15,8 +15,6 @@ struct SearchResultsView: View {
     @State private var inputText: String = ""
     // 次のSearchResultsViewへの遷移トリガー
     @State private var showNextSearchResults = false
-    // 次画面に渡すキーワード
-    @State private var nextSearchKeyword: String?
     // 詳細画面遷移用
     @State private var selectedRestaurant: Restaurant?
     @State private var currentRadius: Int // 現在の検索範囲を保持
@@ -78,7 +76,7 @@ struct SearchResultsView: View {
                 print("SearchResultsHeaderView: 検索範囲が変更されました。再検索を実行します。")
 
                 Task {
-                    await viewModel.searchRestaurants(keyword: /* キーワード */ nil)
+                    await viewModel.searchRestaurants(keyword: inputText)
                 }
             }
         }

@@ -22,6 +22,7 @@ class ContentViewModel {
     var selectedGenre: String = "すべて"
     var selectedBudget: String = "指定なし"
     var errorMessage: String = ""
+    var searchRangeViewModel = SearchRangeViewModel()
 
     // 最後に検索したキーワードを保持 (任意)
     var lastSearchedKeyword: String? = nil
