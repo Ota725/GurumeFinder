@@ -12,7 +12,6 @@ struct GurumeFinderApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-//            SearchBetaView()
         }
     }
 }

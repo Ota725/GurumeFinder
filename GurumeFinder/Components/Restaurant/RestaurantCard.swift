@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Kingfisher
 
 // レストランカードコンポーネント
 struct RestaurantCard: View {
@@ -56,22 +57,15 @@ struct RestaurantImageView: View {
 
     var body: some View {
         if let imageUrl = imageUrl, let url = URL(string: imageUrl) {
-            AsyncImage(url: url) { phase in
-                switch phase {
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(height: 140)
-                        .clipped()
-                case .failure(_):
-                    ImagePlaceholder(text: "画像読み込みエラー")
-                case .empty:
-                    ImagePlaceholder(overlay: AnyView(ProgressView()))
-                @unknown default:
-                    EmptyView()
+            KFImage(url)
+                .placeholder { progress in
+                    ImagePlaceholder(overlay: AnyView(ProgressView(value: Float(progress.fractionCompleted))))
                 }
-            }
+                .fade(duration: 0.3)
+                .resizable()
+                .scaledToFill()
+                .frame(height: 140)
+                .clipped()
         } else {
             ImagePlaceholder(text: "画像なし")
         }
@@ -97,6 +91,18 @@ struct ImagePlaceholder: View {
     }
 }
 
+// キャッシュ削除を行うための拡張
+extension RestaurantImageView {
+    static func clearCache(for imageUrl: String) {
+        guard let url = URL(string: imageUrl) else { return }
+        // Kingfisherのキャッシュを削除
+        if ImageCache.default.isCached(forKey: url.cacheKey) {
+            ImageCache.default.removeImage(forKey: url.cacheKey)
+        }
+    }
+}
+
+// プレビュー用のコード
 #Preview {
     ContentView()
 }

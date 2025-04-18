@@ -5,6 +5,13 @@
 //  Created by 太田陽菜 on 2025/04/06.
 //
 
+//
+//  LocationManager.swift
+//  GurumeFinder
+//
+//  Created by 太田陽菜 on 2025/04/06.
+//
+
 import SwiftUI
 import Foundation
 import CoreLocation
@@ -17,54 +24,50 @@ enum LocationError: Error {
 
 @Observable class LocationManager: NSObject, CLLocationManagerDelegate {
     private let locationManager = CLLocationManager()
-
-    var location: CLLocation?
-    var authorizationStatus: CLAuthorizationStatus
-    var locationError: LocationError? // LocationError を保持するプロパティ
+    var location: CLLocation? // 現在地
+    var authorizationStatus: CLAuthorizationStatus // 認証状態
+    var locationError: LocationError? // 位置情報エラー
 
     override init() {
         authorizationStatus = locationManager.authorizationStatus
-        locationError = nil // 初期化
-
+        locationError = nil
         super.init()
         locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest // 最高精度
     }
 
     func requestPermission() {
-        locationManager.requestWhenInUseAuthorization()
+        locationManager.requestWhenInUseAuthorization() // 利用中のみ許可リクエスト
     }
 
     func startUpdatingLocation() {
-        locationManager.startUpdatingLocation()
-        locationError = nil // 位置情報更新開始時にエラーをクリア
+        locationManager.startUpdatingLocation() // 位置情報更新開始
+        locationError = nil
     }
 
     func stopUpdatingLocation() {
-        locationManager.stopUpdatingLocation()
+        locationManager.stopUpdatingLocation() // 位置情報更新停止
     }
 
-    // CLLocationManagerDelegateメソッド
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        location = locations.last
+        location = locations.last // 最新の位置情報
     }
 
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        locationError = .unknown(error) // 位置情報取得失敗時に LocationError を設定
-        stopUpdatingLocation() // エラー発生時は位置情報更新を停止することが望ましい
+        locationError = .unknown(error) // エラーを記録
+        stopUpdatingLocation()
     }
 
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         authorizationStatus = status
-        locationError = nil // 認証状態変更時にエラーをクリア
+        locationError = nil
 
         if status == .authorizedWhenInUse || status == .authorizedAlways {
-            locationManager.startUpdatingLocation()
+            locationManager.startUpdatingLocation() // 許可時、更新開始
         } else {
-            // 許可されなかった場合は位置情報更新を停止
             stopUpdatingLocation()
             if status == .denied || status == .restricted {
-                locationError = .notAuthorized
+                locationError = .notAuthorized // 未許可エラー
             }
         }
     }
